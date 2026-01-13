@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Labb2_NEU25G.Models"
         xmlns:model="clr-namespace:Labb2_NEU25G.Models"
+        xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
         mc:Ignorable="d"
         Title="Music Library Manager" Height="600" Width="1200">
     <DockPanel>
@@ -43,41 +44,43 @@
                            FontSize="16" 
                            FontWeight="Bold" 
                            Padding="10"
-                           Background="#FFE8E8E8"/>
+                           Background="SkyBlue"/>
                 <TreeView x:Name="myTreeView" SelectedItemChanged="myTreeView_SelectedItemChanged">
                     <TreeView.Resources>
                         <HierarchicalDataTemplate DataType="{x:Type model:Artist}" ItemsSource="{Binding Albums}">
                             <TextBlock>
                                 <Run Text="{Binding Name}" />
-                                <Run Text="(" /><Run Text="{Binding Albums.Count, Mode=OneWay}" />
-                                <Run Text="albums)" />
+                                <Run Text=" (" /><Run Text="{Binding Albums.Count, Mode=OneWay}" />
+                                <Run Text=" albums)" />
                             </TextBlock>
                         </HierarchicalDataTemplate>
-                        <HierarchicalDataTemplate DataType="{x:Type model:Album}">
+                        <DataTemplate DataType="{x:Type model:Album}">
                             <TextBlock Text="{Binding Title}" />
-                        </HierarchicalDataTemplate>
+                        </DataTemplate>
                     </TreeView.Resources>
                 </TreeView>
             </DockPanel>
 
             <DockPanel Grid.Column="1">
-                <TextBlock DockPanel.Dock="Top" 
-                           Text="Tracks" 
-                           FontSize="16" 
-                           FontWeight="Bold" 
-                           Padding="10"
-                           Background="#FFE8E8E8"/>
-                <StackPanel DockPanel.Dock="Bottom" 
-                            Orientation="Horizontal" 
-                            HorizontalAlignment="Center"
-                            Margin="5">
+                <DockPanel DockPanel.Dock="Top" Background="SkyBlue">
                     <Button x:Name="btnAddToPlaylist" 
-                            Content="Add to Playlist" 
-                            Width="120" 
+                            DockPanel.Dock="Right"
+                            Width="150" 
                             Height="30" 
                             Margin="5"
-                            Click="AddToPlaylist_Click"/>
-                </StackPanel>
+                            VerticalAlignment="Center"
+                            Click="AddToPlaylist_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <fa:IconBlock Icon="Plus" Foreground="Green" FontSize="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Add to Playlist" VerticalAlignment="Center" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
+                    <TextBlock Text="Tracks" 
+                               FontSize="16" 
+                               FontWeight="Bold" 
+                               Padding="10"
+                               VerticalAlignment="Center"/>
+                </DockPanel>
                 <DataGrid x:Name="myDataGrid" 
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
@@ -93,7 +96,7 @@
                           HorizontalScrollBarVisibility="Visible"
                           AlternationCount="2"
                           RowBackground="White"
-                          AlternatingRowBackground="NavajoWhite">
+                          AlternatingRowBackground="LightBlue">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Track Name" Width="*" Binding="{Binding Name}" />
                         <DataGridTextColumn Header="Composer" Width="*" Binding="{Binding Composer}" />
@@ -103,12 +106,39 @@
             </DockPanel>
 
             <DockPanel Grid.Column="2">
-                <TextBlock DockPanel.Dock="Top" 
-                           Text="Playlists" 
-                           FontSize="16" 
-                           FontWeight="Bold" 
-                           Padding="10"
-                           Background="#FFE8E8E8"/>
+                <DockPanel DockPanel.Dock="Top" Background="SkyBlue">
+                    <StackPanel DockPanel.Dock="Right" 
+                                Orientation="Horizontal" 
+                                VerticalAlignment="Center"
+                                Margin="5">
+                        <Button Width="32" 
+                                Height="32" 
+                                Margin="2"
+                                ToolTip="New Playlist"
+                                Click="NewPlaylist_Click">
+                            <fa:IconBlock Icon="Plus" Foreground="Green" FontSize="16"/>
+                        </Button>
+                        <Button Width="32" 
+                                Height="32" 
+                                Margin="2"
+                                ToolTip="Rename Playlist"
+                                Click="RenamePlaylist_Click">
+                            <fa:IconBlock Icon="Edit" Foreground="Orange" FontSize="16"/>
+                        </Button>
+                        <Button Width="32" 
+                                Height="32" 
+                                Margin="2"
+                                ToolTip="Delete Playlist"
+                                Click="DeletePlaylist_Click">
+                            <fa:IconBlock Icon="TrashAlt" Foreground="Red" FontSize="16"/>
+                        </Button>
+                    </StackPanel>
+                    <TextBlock Text="Playlists" 
+                               FontSize="16" 
+                               FontWeight="Bold" 
+                               Padding="10"
+                               VerticalAlignment="Center"/>
+                </DockPanel>
                 
                 <DockPanel DockPanel.Dock="Top" Margin="10">
                     <TextBlock DockPanel.Dock="Top" 
@@ -121,18 +151,24 @@
                               Height="25"/>
                 </DockPanel>
 
-                <DockPanel DockPanel.Dock="Bottom" Margin="10">
-                    <Button x:Name="btnRemoveFromPlaylist" 
-                            Content="Remove Selected" 
-                            Height="30"
-                            Click="RemoveFromPlaylist_Click"/>
-                </DockPanel>
-
-                <DockPanel Margin="10,0,10,10">
-                    <TextBlock DockPanel.Dock="Top" 
-                               Text="Tracks in Playlist:" 
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,5"/>
+                <DockPanel Margin="10,10,10,10">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,5">
+                        <Button x:Name="btnRemoveFromPlaylist" 
+                                DockPanel.Dock="Right"
+                                Width="100" 
+                                Height="24"
+                                ToolTip="Remove track"
+                                VerticalAlignment="Center"
+                                Click="RemoveFromPlaylist_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock Icon="Times" Foreground="Red" FontSize="12" Margin="0,0,3,0"/>
+                                <TextBlock Text="Remove" VerticalAlignment="Center" FontSize="11"/>
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Text="Tracks in Playlist:" 
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
                     <ListBox x:Name="lstPlaylistTracks" 
                              DisplayMemberPath="Name"
                              SelectionMode="Extended"/>
