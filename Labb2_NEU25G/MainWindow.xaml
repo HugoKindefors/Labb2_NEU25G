@@ -6,54 +6,138 @@
         xmlns:local="clr-namespace:Labb2_NEU25G.Models"
         xmlns:model="clr-namespace:Labb2_NEU25G.Models"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="2*" />
-        </Grid.ColumnDefinitions>
+        Title="Music Library Manager" Height="600" Width="1200">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_Artist">
+                <MenuItem Header="_Add Artist" Click="AddArtist_Click"/>
+                <MenuItem Header="_Edit Artist" Click="EditArtist_Click"/>
+                <MenuItem Header="_Delete Artist" Click="DeleteArtist_Click"/>
+                <Separator/>
+                <MenuItem Header="_Add Album" Click="AddAlbum_Click"/>
+                <MenuItem Header="_Edit Album" Click="EditAlbum_Click"/>
+                <MenuItem Header="_Delete Album" Click="DeleteAlbum_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Track">
+                <MenuItem Header="_Add Track" Click="AddTrack_Click"/>
+                <MenuItem Header="_Edit Track" Click="EditTrack_Click"/>
+                <MenuItem Header="_Delete Track" Click="DeleteTrack_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Playlist">
+                <MenuItem Header="_New Playlist" Click="NewPlaylist_Click"/>
+                <MenuItem Header="_Rename Playlist" Click="RenamePlaylist_Click"/>
+                <MenuItem Header="_Delete Playlist" Click="DeletePlaylist_Click"/>
+            </MenuItem>
+        </Menu>
 
-        <TreeView x:Name="myTreeView" SelectedItemChanged="myTreeView_SelectedItemChanged">
-            <TreeView.Resources>
-                <HierarchicalDataTemplate DataType="{x:Type model:Artist}" ItemsSource="{Binding Albums}">
-                    <TextBlock>
-                        <Run Text="{Binding Name}" />
-                        <Run Text="(" /><Run Text="{Binding Albums.Count, Mode=OneWay}" />
-                        <Run Text="albums)" />
-                    </TextBlock>
-                </HierarchicalDataTemplate>
-                <HierarchicalDataTemplate DataType="{x:Type model:Album}" ItemsSource="{Binding Tracks}">
-                    <TextBlock Text="{Binding Title}" />
-                </HierarchicalDataTemplate>
-                <!--<HierarchicalDataTemplate DataType="{x:Type model:Track}">
-                    <TextBlock Text="{Binding Name}" />
-                </HierarchicalDataTemplate>-->
-            </TreeView.Resources>
-        </TreeView>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.5*" />
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="1.5*" />
+            </Grid.ColumnDefinitions>
 
-        <DataGrid x:Name="myDataGrid" 
-                  Grid.Column="1"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  CanUserResizeColumns="False"
-                  CanUserResizeRows="False"
-                  CanUserReorderColumns="False"
-                  CanUserSortColumns="True"
-                  SelectionMode="Extended"
-                  SelectionUnit="CellOrRowHeader"
-                  RowHeaderWidth="20"
-                  HorizontalScrollBarVisibility="Visible"
-                  AlternationCount="2"
-                  RowBackground="White"
-                  AlternatingRowBackground="NavajoWhite"
-        >
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Track Name" Width="*" Binding="{Binding Name}" />
-                <DataGridTextColumn Header="Album" Width="*" Binding="{Binding Composer}" />
-                <DataGridTextColumn Header="Length" Width="100" Binding="{Binding Length}" />
-            </DataGrid.Columns>
-        </DataGrid>
-    </Grid>
+            <DockPanel Grid.Column="0">
+                <TextBlock DockPanel.Dock="Top" 
+                           Text="Artists &amp; Albums" 
+                           FontSize="16" 
+                           FontWeight="Bold" 
+                           Padding="10"
+                           Background="#FFE8E8E8"/>
+                <TreeView x:Name="myTreeView" SelectedItemChanged="myTreeView_SelectedItemChanged">
+                    <TreeView.Resources>
+                        <HierarchicalDataTemplate DataType="{x:Type model:Artist}" ItemsSource="{Binding Albums}">
+                            <TextBlock>
+                                <Run Text="{Binding Name}" />
+                                <Run Text="(" /><Run Text="{Binding Albums.Count, Mode=OneWay}" />
+                                <Run Text="albums)" />
+                            </TextBlock>
+                        </HierarchicalDataTemplate>
+                        <HierarchicalDataTemplate DataType="{x:Type model:Album}" ItemsSource="{Binding Tracks}">
+                            <TextBlock Text="{Binding Title}" />
+                        </HierarchicalDataTemplate>
+                    </TreeView.Resources>
+                </TreeView>
+            </DockPanel>
+
+            <DockPanel Grid.Column="1">
+                <TextBlock DockPanel.Dock="Top" 
+                           Text="Tracks" 
+                           FontSize="16" 
+                           FontWeight="Bold" 
+                           Padding="10"
+                           Background="#FFE8E8E8"/>
+                <StackPanel DockPanel.Dock="Bottom" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Center"
+                            Margin="5">
+                    <Button x:Name="btnAddToPlaylist" 
+                            Content="Add to Playlist" 
+                            Width="120" 
+                            Height="30" 
+                            Margin="5"
+                            Click="AddToPlaylist_Click"/>
+                </StackPanel>
+                <DataGrid x:Name="myDataGrid" 
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          CanUserResizeColumns="True"
+                          CanUserResizeRows="False"
+                          CanUserReorderColumns="False"
+                          CanUserSortColumns="True"
+                          SelectionMode="Extended"
+                          SelectionUnit="FullRow"
+                          RowHeaderWidth="20"
+                          HorizontalScrollBarVisibility="Visible"
+                          AlternationCount="2"
+                          RowBackground="White"
+                          AlternatingRowBackground="NavajoWhite">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Track Name" Width="*" Binding="{Binding Name}" />
+                        <DataGridTextColumn Header="Composer" Width="*" Binding="{Binding Composer}" />
+                        <DataGridTextColumn Header="Length" Width="100" Binding="{Binding Length}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+
+            <DockPanel Grid.Column="2">
+                <TextBlock DockPanel.Dock="Top" 
+                           Text="Playlists" 
+                           FontSize="16" 
+                           FontWeight="Bold" 
+                           Padding="10"
+                           Background="#FFE8E8E8"/>
+                
+                <DockPanel DockPanel.Dock="Top" Margin="10">
+                    <TextBlock DockPanel.Dock="Top" 
+                               Text="Select Playlist:" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <ComboBox x:Name="cmbPlaylists" 
+                              DisplayMemberPath="Name"
+                              SelectionChanged="cmbPlaylists_SelectionChanged"
+                              Height="25"/>
+                </DockPanel>
+
+                <DockPanel DockPanel.Dock="Bottom" Margin="10">
+                    <Button x:Name="btnRemoveFromPlaylist" 
+                            Content="Remove Selected" 
+                            Height="30"
+                            Click="RemoveFromPlaylist_Click"/>
+                </DockPanel>
+
+                <DockPanel Margin="10,0,10,10">
+                    <TextBlock DockPanel.Dock="Top" 
+                               Text="Tracks in Playlist:" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <ListBox x:Name="lstPlaylistTracks" 
+                             DisplayMemberPath="Name"
+                             SelectionMode="Extended"/>
+                </DockPanel>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
 </Window>

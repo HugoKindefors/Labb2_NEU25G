@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Labb2_NEU25G.Models
 {
@@ -16,13 +17,13 @@ namespace Labb2_NEU25G.Models
         public MainWindow()
         {
             InitializeComponent();
-
             Loaded += MainWindow_Loaded;
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             await LoadArtistsAsync();
+            await LoadPlaylistsAsync();
         }
 
         private async Task LoadArtistsAsync()
@@ -38,6 +39,13 @@ namespace Labb2_NEU25G.Models
             myTreeView.ItemsSource = new ObservableCollection<Artist>(artists);
         }
 
+        private async Task LoadPlaylistsAsync()
+        {
+            using var db = new MusicContext();
+            var playlists = await db.Playlists.ToListAsync();
+            cmbPlaylists.ItemsSource = new ObservableCollection<Playlist>(playlists);
+        }
+
         private async Task LoadTracksAsync(Album album)
         {
             using var db = new MusicContext();
@@ -45,15 +53,28 @@ namespace Labb2_NEU25G.Models
             var tracks = await db.Tracks
                 .Include(t => t.Album)
                 .Where(t => t.AlbumId == album.AlbumId)
-                .Select(t => new 
+                .Select(t => new TrackViewModel
                 { 
                     Name = t.Name, 
-                    Composer = t.Composer, 
+                    Composer = t.Composer ?? "Unknown", 
                     Length = TimeSpan.FromMilliseconds(t.Milliseconds).ToString(@"mm\:ss") 
                 })
                 .ToListAsync();
 
-            myDataGrid.ItemsSource = new ObservableCollection<object>(tracks);
+            myDataGrid.ItemsSource = new ObservableCollection<TrackViewModel>(tracks);
+        }
+
+        private async Task LoadPlaylistTracksAsync(int playlistId)
+        {
+            using var db = new MusicContext();
+
+            var tracks = await db.PlaylistTracks
+                .Where(pt => pt.PlaylistId == playlistId)
+                .Include(pt => pt.Track)
+                .Select(pt => pt.Track)
+                .ToListAsync();
+
+            lstPlaylistTracks.ItemsSource = new ObservableCollection<Track>(tracks);
         }
 
         private async void myTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
