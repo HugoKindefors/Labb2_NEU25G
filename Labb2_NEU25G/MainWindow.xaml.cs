@@ -31,10 +31,12 @@ namespace Labb2_NEU25G.Models
             using var db = new MusicContext();
 
             var artists = await db.Artists
-                .Where(artist => artist.Albums.Count > 2)
-                .Include(artist => artist.Albums)
-                .ThenInclude(album => album.Tracks)  
-                .ToListAsync();
+             //.Where(artist => artist.Albums.Count > 2)  // TOG BORT?
+             .Include(artist => artist.Albums)
+             .ThenInclude(album => album.Tracks)
+             .OrderBy(a => a.Name)
+             .ToListAsync();
+
 
             myTreeView.ItemsSource = new ObservableCollection<Artist>(artists);
         }
@@ -93,35 +95,174 @@ namespace Labb2_NEU25G.Models
             }
         }
 
-        private void AddArtist_Click(object sender, RoutedEventArgs e)
+        private async void AddArtist_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Add Artist - Coming soon!");
+            var name = AskText("Add Artist", "Artistnamn:");
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            using var db = new MusicContext();
+
+            var ids = await db.Artists.Select(a => a.ArtistId).ToListAsync();
+            var newId = NextId(ids);
+
+            var artist = new Artist
+            {
+                ArtistId = newId,
+                Name = name
+            };
+
+            db.Artists.Add(artist);
+            await db.SaveChangesAsync();
+
+            await LoadArtistsAsync();
         }
 
-        private void EditArtist_Click(object sender, RoutedEventArgs e)
+
+        private async void EditArtist_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Edit Artist - Coming soon!");
+            if (myTreeView.SelectedItem is not Artist selectedArtist)
+            {
+                MessageBox.Show("Select an artist in the list first.");
+                return;
+            }
+
+            var newName = AskText("Edit Artist", "New artist name:", selectedArtist.Name ?? "");
+            if (string.IsNullOrWhiteSpace(newName)) return;
+
+            using var db = new MusicContext();
+
+            var artist = await db.Artists.FirstAsync(a => a.ArtistId == selectedArtist.ArtistId);
+            artist.Name = newName;
+
+            await db.SaveChangesAsync();
+            await LoadArtistsAsync();
         }
 
-        private void DeleteArtist_Click(object sender, RoutedEventArgs e)
+
+        private async void DeleteArtist_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Delete Artist - Coming soon!");
+            if (myTreeView.SelectedItem is not Artist selectedArtist)
+            {
+                MessageBox.Show("Select an artist in the list first.");
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Remove artist '{selectedArtist.Name}'?\n\nNote: This artist has albums and cannot be deleted until they are removed.",
+                "Confirm",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            using var db = new MusicContext();
+
+            // Kolla om artisten har album
+            var hasAlbums = await db.Albums.AnyAsync(a => a.ArtistId == selectedArtist.ArtistId);
+            if (hasAlbums)
+            {
+                MessageBox.Show("Can't delete an artist that has an almbum. Delete the album first.");
+                return;
+            }
+
+            var artist = await db.Artists.FirstAsync(a => a.ArtistId == selectedArtist.ArtistId);
+            db.Artists.Remove(artist);
+
+            await db.SaveChangesAsync();
+            await LoadArtistsAsync();
         }
 
-        private void AddAlbum_Click(object sender, RoutedEventArgs e)
+
+        private async void AddAlbum_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Add Album - Coming soon!");
+            // Album hör till en artist — så vi behöver en artist vald.
+            Artist? artist = myTreeView.SelectedItem as Artist;
+
+            // Om man har klickat på ett album i TreeView så kan vi ändå hitta dess artist:
+            if (artist == null && myTreeView.SelectedItem is Album albumNode)
+                artist = albumNode.Artist;
+
+            if (artist == null)
+            {
+                MessageBox.Show("Select an artist (or an album under an artist) first.");
+                return;
+            }
+
+            var title = AskText("Add Album", "Album name:");
+            if (string.IsNullOrWhiteSpace(title)) return;
+
+            using var db = new MusicContext();
+
+            var ids = await db.Albums.Select(a => a.AlbumId).ToListAsync();
+            var newId = NextId(ids);
+
+            var album = new Album
+            {
+                AlbumId = newId,
+                Title = title,
+                ArtistId = artist.ArtistId
+            };
+
+            db.Albums.Add(album);
+            await db.SaveChangesAsync();
+
+            await LoadArtistsAsync();
         }
 
-        private void EditAlbum_Click(object sender, RoutedEventArgs e)
+
+        private async void EditAlbum_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Edit Album - Coming soon!");
+            if (myTreeView.SelectedItem is not Album selectedAlbum)
+            {
+                MessageBox.Show("Select an album in the list first.");
+                return;
+            }
+
+            var newTitle = AskText("Edit Album", "New album name:", selectedAlbum.Title);
+            if (string.IsNullOrWhiteSpace(newTitle)) return;
+
+            using var db = new MusicContext();
+
+            var album = await db.Albums.FirstAsync(a => a.AlbumId == selectedAlbum.AlbumId);
+            album.Title = newTitle;
+
+            await db.SaveChangesAsync();
+            await LoadArtistsAsync();
         }
 
-        private void DeleteAlbum_Click(object sender, RoutedEventArgs e)
+
+        private async void DeleteAlbum_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Delete Album - Coming soon!");
+            if (myTreeView.SelectedItem is not Album selectedAlbum)
+            {
+                MessageBox.Show("Select an album in the list first.");
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Ta bort album '{selectedAlbum.Title}'?\n\nNote: If the album has songs they need to be deleted first.",
+                "Confirm",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            using var db = new MusicContext();
+
+            var hasTracks = await db.Tracks.AnyAsync(t => t.AlbumId == selectedAlbum.AlbumId);
+            if (hasTracks)
+            {
+                MessageBox.Show("Can't remove albums that have songs. Remove the songs first.");
+                return;
+            }
+
+            var album = await db.Albums.FirstAsync(a => a.AlbumId == selectedAlbum.AlbumId);
+            db.Albums.Remove(album);
+
+            await db.SaveChangesAsync();
+            await LoadArtistsAsync();
         }
+
 
         private void AddTrack_Click(object sender, RoutedEventArgs e)
         {
@@ -162,5 +303,17 @@ namespace Labb2_NEU25G.Models
         {
             MessageBox.Show("Remove from Playlist - Coming soon!");
         }
+
+        // la till detta för att generera nästa id
+        private static int NextId(IEnumerable<int> ids)
+        {
+            return ids.Any() ? ids.Max() + 1 : 1;
+        }
+
+        private static string AskText(string title, string prompt, string defaultValue = "")
+        {
+            return Microsoft.VisualBasic.Interaction.InputBox(prompt, title, defaultValue);
+        }
+
     }
 }
