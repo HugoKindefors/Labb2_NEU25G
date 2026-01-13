@@ -24,11 +24,6 @@
                 <MenuItem Header="_Edit Track" Click="EditTrack_Click"/>
                 <MenuItem Header="_Delete Track" Click="DeleteTrack_Click"/>
             </MenuItem>
-            <MenuItem Header="_Playlist">
-                <MenuItem Header="_New Playlist" Click="NewPlaylist_Click"/>
-                <MenuItem Header="_Rename Playlist" Click="RenamePlaylist_Click"/>
-                <MenuItem Header="_Delete Playlist" Click="DeletePlaylist_Click"/>
-            </MenuItem>
         </Menu>
 
         <Grid>
