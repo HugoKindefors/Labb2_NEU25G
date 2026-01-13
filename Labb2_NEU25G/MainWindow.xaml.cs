@@ -84,5 +84,83 @@ namespace Labb2_NEU25G.Models
                 await LoadTracksAsync(album);
             }
         }
+
+        private async void cmbPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbPlaylists.SelectedItem is Playlist playlist)
+            {
+                await LoadPlaylistTracksAsync(playlist.PlaylistId);
+            }
+        }
+
+        private void AddArtist_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Add Artist - Coming soon!");
+        }
+
+        private void EditArtist_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Edit Artist - Coming soon!");
+        }
+
+        private void DeleteArtist_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Delete Artist - Coming soon!");
+        }
+
+        private void AddAlbum_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Add Album - Coming soon!");
+        }
+
+        private void EditAlbum_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Edit Album - Coming soon!");
+        }
+
+        private void DeleteAlbum_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Delete Album - Coming soon!");
+        }
+
+        private void AddTrack_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Add Track - Coming soon!");
+        }
+
+        private void EditTrack_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Edit Track - Coming soon!");
+        }
+
+        private void DeleteTrack_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Delete Track - Coming soon!");
+        }
+
+        private void NewPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("New Playlist - Coming soon!");
+        }
+
+        private void RenamePlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Rename Playlist - Coming soon!");
+        }
+
+        private void DeletePlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Delete Playlist - Coming soon!");
+        }
+
+        private void AddToPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Add to Playlist - Coming soon!");
+        }
+
+        private void RemoveFromPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Remove from Playlist - Coming soon!");
+        }
     }
 }

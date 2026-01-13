@@ -53,7 +53,7 @@
                                 <Run Text="albums)" />
                             </TextBlock>
                         </HierarchicalDataTemplate>
-                        <HierarchicalDataTemplate DataType="{x:Type model:Album}" ItemsSource="{Binding Tracks}">
+                        <HierarchicalDataTemplate DataType="{x:Type model:Album}">
                             <TextBlock Text="{Binding Title}" />
                         </HierarchicalDataTemplate>
                     </TreeView.Resources>
