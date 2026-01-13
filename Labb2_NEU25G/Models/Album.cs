@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Windows.Controls.Primitives;
 
 namespace Labb2_NEU25G.Models;
-
+//vendela test comment for branch
 public partial class Album
 {
     public int AlbumId { get; set; }
