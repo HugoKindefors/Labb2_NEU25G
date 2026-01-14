@@ -57,7 +57,7 @@
             </DockPanel>
 
             <DockPanel Grid.Column="1">
-                <DockPanel DockPanel.Dock="Top" Background="SkyBlue">
+                <DockPanel DockPanel.Dock="Top" Background="SkyBlue" Margin="0,0,0,5">
                     <Button x:Name="btnAddToPlaylist" 
                             DockPanel.Dock="Right"
                             Width="150" 
@@ -91,7 +91,9 @@
                           HorizontalScrollBarVisibility="Visible"
                           AlternationCount="2"
                           RowBackground="White"
+                          Margin="0,0,5,0"
                           AlternatingRowBackground="LightBlue">
+                    
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Track Name" Width="*" Binding="{Binding Name}" />
                         <DataGridTextColumn Header="Composer" Width="*" Binding="{Binding Composer}" />
