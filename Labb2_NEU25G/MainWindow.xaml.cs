@@ -56,16 +56,17 @@ namespace Labb2_NEU25G.Models
                 .Include(t => t.Album)
                 .Where(t => t.AlbumId == album.AlbumId)
                 .Select(t => new TrackViewModel
-                { 
+                {
                     TrackId = t.TrackId,
-                    Name = t.Name, 
-                    Composer = t.Composer ?? "Unknown", 
-                    Length = TimeSpan.FromMilliseconds(t.Milliseconds).ToString(@"mm\:ss") 
+                    Name = t.Name,
+                    Composer = t.Composer ?? "Unknown",
+                    Length = TimeSpan.FromMilliseconds(t.Milliseconds).ToString(@"mm\:ss")
                 })
                 .ToListAsync();
 
             myDataGrid.ItemsSource = new ObservableCollection<TrackViewModel>(tracks);
         }
+
 
         private async Task LoadPlaylistTracksAsync(int playlistId)
         {
