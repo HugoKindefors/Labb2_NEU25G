@@ -263,20 +263,140 @@ namespace Labb2_NEU25G.Models
         }
 
 
-        private void AddTrack_Click(object sender, RoutedEventArgs e)
+        private async void AddTrack_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Add Track - Coming soon!");
+            if (myTreeView.SelectedItem is not Album album)
+            {
+                MessageBox.Show("Please select an album first.");
+                return;
+            }
+
+            var name = AskText("Add Track", "Track name:");
+            if (string.IsNullOrWhiteSpace(name))
+                return;
+
+            var composer = AskText("Add Track", "Composer (optional):", "");
+
+            var secondsText = AskText("Add Track", "Duration in seconds (for example: 180):", "180");
+            if (!int.TryParse(secondsText, out var seconds) || seconds <= 0)
+            {
+                MessageBox.Show("Invalid length. Please enter the duration in seconds (for example: 180).");
+                return;
+            }
+
+            using var db = new MusicContext();
+
+            var ids = await db.Tracks.Select(t => t.TrackId).ToListAsync();
+            var newId = NextId(ids);
+
+            var defaultMediaTypeId = await db.MediaTypes
+                .OrderBy(mt => mt.MediaTypeId)
+                .Select(mt => mt.MediaTypeId)
+                .FirstAsync();
+
+            var track = new Track
+            {
+                TrackId = newId,
+                Name = name,
+                Composer = string.IsNullOrWhiteSpace(composer) ? null : composer,
+                AlbumId = album.AlbumId,
+                MediaTypeId = defaultMediaTypeId,
+                GenreId = null,
+                Milliseconds = seconds * 1000,
+                Bytes = null,
+                UnitPrice = 0.99
+            };
+
+            db.Tracks.Add(track);
+            await db.SaveChangesAsync();
+
+            await LoadTracksAsync(album);
         }
 
-        private void EditTrack_Click(object sender, RoutedEventArgs e)
+
+        private async void EditTrack_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Edit Track - Coming soon!");
+            if (myDataGrid.SelectedItem is not TrackViewModel vm)
+            {
+                MessageBox.Show("Please select a track first.");
+                return;
+            }
+
+            using var db = new MusicContext();
+
+            var track = await db.Tracks.FirstAsync(t => t.TrackId == vm.TrackId);
+
+            var newName = AskText("Edit Track", "Track name:", track.Name);
+            if (string.IsNullOrWhiteSpace(newName))
+                return;
+
+            var newComposer = AskText(
+                "Edit Track",
+                "Composer (optional):",
+                track.Composer ?? "");
+
+            var secondsText = AskText(
+                "Edit Track",
+                "Duration in seconds:",
+                (track.Milliseconds / 1000).ToString());
+
+            if (!int.TryParse(secondsText, out var seconds) || seconds <= 0)
+            {
+                MessageBox.Show(
+                    "Invalid length. Please enter the duration in seconds (for example: 180).");
+                return;
+            }
+
+            track.Name = newName;
+            track.Composer = string.IsNullOrWhiteSpace(newComposer) ? null : newComposer;
+            track.Milliseconds = seconds * 1000;
+
+            await db.SaveChangesAsync();
+
+            if (myTreeView.SelectedItem is Album album)
+                await LoadTracksAsync(album);
         }
 
-        private void DeleteTrack_Click(object sender, RoutedEventArgs e)
+
+        private async void DeleteTrack_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Delete Track - Coming soon!");
+            if (myDataGrid.SelectedItem is not TrackViewModel vm)
+            {
+                MessageBox.Show("Please select a track first.");
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Are you sure you want to delete '{vm.Name}'?\n\n" +
+                "This track will also be removed from all playlists.",
+                "Confirm",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
+            using var db = new MusicContext();
+
+            var links = await db.PlaylistTracks
+                .Where(pt => pt.TrackId == vm.TrackId)
+                .ToListAsync();
+
+            if (links.Count > 0)
+                db.PlaylistTracks.RemoveRange(links);
+
+            var track = await db.Tracks.FirstAsync(t => t.TrackId == vm.TrackId);
+            db.Tracks.Remove(track);
+
+            await db.SaveChangesAsync();
+
+            if (myTreeView.SelectedItem is Album album)
+                await LoadTracksAsync(album);
+
+            if (cmbPlaylists.SelectedItem is Playlist playlist)
+                await LoadPlaylistTracksAsync(playlist.PlaylistId);
         }
+
 
         private async void NewPlaylist_Click(object sender, RoutedEventArgs e)
         {
@@ -463,6 +583,7 @@ namespace Labb2_NEU25G.Models
         {
             return Microsoft.VisualBasic.Interaction.InputBox(prompt, title, defaultValue);
         }
+
 
     }
 }
