@@ -57,6 +57,7 @@ namespace Labb2_NEU25G.Models
                 .Where(t => t.AlbumId == album.AlbumId)
                 .Select(t => new TrackViewModel
                 { 
+                    TrackId = t.TrackId,
                     Name = t.Name, 
                     Composer = t.Composer ?? "Unknown", 
                     Length = TimeSpan.FromMilliseconds(t.Milliseconds).ToString(@"mm\:ss") 
@@ -294,14 +295,101 @@ namespace Labb2_NEU25G.Models
             MessageBox.Show("Delete Playlist - Coming soon!");
         }
 
-        private void AddToPlaylist_Click(object sender, RoutedEventArgs e)
+        private async void AddToPlaylist_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Add to Playlist - Coming soon!");
+            if (cmbPlaylists.SelectedItem is not Playlist selectedPlaylist)
+            {
+                MessageBox.Show("Select a playlist first.", "No Playlist Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (myDataGrid.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Select one or more tracks to add to the playlist.", "No Tracks Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            using var db = new MusicContext();
+
+            int addedCount = 0;
+            int skippedCount = 0;
+
+            foreach (TrackViewModel selectedTrack in myDataGrid.SelectedItems)
+            {
+                var exists = await db.PlaylistTracks
+                    .AnyAsync(pt => pt.PlaylistId == selectedPlaylist.PlaylistId && pt.TrackId == selectedTrack.TrackId);
+
+                if (exists)
+                {
+                    skippedCount++;
+                    continue;
+                }
+
+                var playlistTrack = new PlaylistTrack
+                {
+                    PlaylistId = selectedPlaylist.PlaylistId,
+                    TrackId = selectedTrack.TrackId
+                };
+
+                db.PlaylistTracks.Add(playlistTrack);
+                addedCount++;
+            }
+
+            await db.SaveChangesAsync();
+
+            await LoadPlaylistTracksAsync(selectedPlaylist.PlaylistId);
+
+            string message = $"{addedCount} track(s) added to playlist.";
+            if (skippedCount > 0)
+            {
+                message += $"\n{skippedCount} track(s) were already in the playlist.";
+            }
+            MessageBox.Show(message, "Add to Playlist", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void RemoveFromPlaylist_Click(object sender, RoutedEventArgs e)
+        private async void RemoveFromPlaylist_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Remove from Playlist - Coming soon!");
+            if (cmbPlaylists.SelectedItem is not Playlist selectedPlaylist)
+            {
+                MessageBox.Show("Select a playlist first.", "No Playlist Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (lstPlaylistTracks.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Select one or more tracks to remove from the playlist.", "No Tracks Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Remove {lstPlaylistTracks.SelectedItems.Count} track(s) from playlist '{selectedPlaylist.Name}'?",
+                "Confirm Remove",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            using var db = new MusicContext();
+
+            int removedCount = 0;
+
+            foreach (Track selectedTrack in lstPlaylistTracks.SelectedItems)
+            {
+                var playlistTrack = await db.PlaylistTracks
+                    .FirstOrDefaultAsync(pt => pt.PlaylistId == selectedPlaylist.PlaylistId && pt.TrackId == selectedTrack.TrackId);
+
+                if (playlistTrack != null)
+                {
+                    db.PlaylistTracks.Remove(playlistTrack);
+                    removedCount++;
+                }
+            }
+
+            await db.SaveChangesAsync();
+
+            await LoadPlaylistTracksAsync(selectedPlaylist.PlaylistId);
+
+            MessageBox.Show($"{removedCount} track(s) removed from playlist.", "Remove from Playlist", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // la till detta för att generera nästa id
