@@ -158,7 +158,6 @@ namespace Labb2_NEU25G.Models
 
             using var db = new MusicContext();
 
-            // Kolla om artisten har album
             var hasAlbums = await db.Albums.AnyAsync(a => a.ArtistId == selectedArtist.ArtistId);
             if (hasAlbums)
             {
@@ -176,10 +175,8 @@ namespace Labb2_NEU25G.Models
 
         private async void AddAlbum_Click(object sender, RoutedEventArgs e)
         {
-            // Album hör till en artist — så vi behöver en artist vald.
             Artist? artist = myTreeView.SelectedItem as Artist;
 
-            // Om man har klickat på ett album i TreeView så kan vi ändå hitta dess artist:
             if (artist == null && myTreeView.SelectedItem is Album albumNode)
                 artist = albumNode.Artist;
 
@@ -280,19 +277,83 @@ namespace Labb2_NEU25G.Models
             MessageBox.Show("Delete Track - Coming soon!");
         }
 
-        private void NewPlaylist_Click(object sender, RoutedEventArgs e)
+        private async void NewPlaylist_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("New Playlist - Coming soon!");
+            var name = AskText("New Playlist", "Playlist name:");
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            using var db = new MusicContext();
+
+            var ids = await db.Playlists.Select(p => p.PlaylistId).ToListAsync();
+            var newId = NextId(ids);
+
+            var playlist = new Playlist
+            {
+                PlaylistId = newId,
+                Name = name
+            };
+
+            db.Playlists.Add(playlist);
+            await db.SaveChangesAsync();
+
+            await LoadPlaylistsAsync();
+
+            cmbPlaylists.SelectedItem = cmbPlaylists.Items.Cast<Playlist>().FirstOrDefault(p => p.PlaylistId == newId);
         }
 
-        private void RenamePlaylist_Click(object sender, RoutedEventArgs e)
+        private async void RenamePlaylist_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Rename Playlist - Coming soon!");
+            if (cmbPlaylists.SelectedItem is not Playlist selectedPlaylist)
+            {
+                MessageBox.Show("Select a playlist in the list first.", "No Playlist Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var newName = AskText("Rename Playlist", "New playlist name:", selectedPlaylist.Name ?? "");
+            if (string.IsNullOrWhiteSpace(newName)) return;
+
+            using var db = new MusicContext();
+
+            var playlist = await db.Playlists.FirstAsync(p => p.PlaylistId == selectedPlaylist.PlaylistId);
+            playlist.Name = newName;
+
+            await db.SaveChangesAsync();
+            await LoadPlaylistsAsync();
+
+            cmbPlaylists.SelectedItem = cmbPlaylists.Items.Cast<Playlist>().FirstOrDefault(p => p.PlaylistId == selectedPlaylist.PlaylistId);
         }
 
-        private void DeletePlaylist_Click(object sender, RoutedEventArgs e)
+        private async void DeletePlaylist_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Delete Playlist - Coming soon!");
+            if (cmbPlaylists.SelectedItem is not Playlist selectedPlaylist)
+            {
+                MessageBox.Show("Select a playlist in the list first.", "No Playlist Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Delete playlist '{selectedPlaylist.Name}'?\n\nNote: All tracks in the playlist will be removed from it.",
+                "Confirm Delete",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            using var db = new MusicContext();
+
+            var playlistTracks = await db.PlaylistTracks
+                .Where(pt => pt.PlaylistId == selectedPlaylist.PlaylistId)
+                .ToListAsync();
+
+            db.PlaylistTracks.RemoveRange(playlistTracks);
+
+            var playlist = await db.Playlists.FirstAsync(p => p.PlaylistId == selectedPlaylist.PlaylistId);
+            db.Playlists.Remove(playlist);
+
+            await db.SaveChangesAsync();
+
+            lstPlaylistTracks.ItemsSource = null;
+            await LoadPlaylistsAsync();
         }
 
         private async void AddToPlaylist_Click(object sender, RoutedEventArgs e)
@@ -392,7 +453,6 @@ namespace Labb2_NEU25G.Models
             MessageBox.Show($"{removedCount} track(s) removed from playlist.", "Remove from Playlist", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // la till detta för att generera nästa id
         private static int NextId(IEnumerable<int> ids)
         {
             return ids.Any() ? ids.Max() + 1 : 1;
