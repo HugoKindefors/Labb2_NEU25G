@@ -28,26 +28,6 @@ Applikationen är kopplad mot den tillhandahållna **everyloop**-databasen och l
 
 ---
 
-## 🛠️ Tekniker
-- C#
-- WPF
-- Entity Framework Core
-- SQL Server
-- Database-first (everyloop)
-- Asynkron databasåtkomst med async/await
-
----
-
-## 🗄️ Databas
-Applikationen använder **everyloop**-databasen som tillhandahålls i kursen.
-
-Viktigt att känna till:
-- Primärnycklar som `ArtistId`, `AlbumId` och `TrackId` är **inte identity-kolumner**
-- ID:n genereras manuellt i applikationen
-- Relationer hanteras explicit, inklusive many-to-many-relationen via `playlist_track`
-
----
-
 ## ▶️ Starta applikationen
 
 1. Klona repot
@@ -72,22 +52,4 @@ Förslag på testflöde:
 7. Ta bort en låt helt (kontrollera att den även försvinner ur spellistor)
 8. Ta bort album och artist efter att låtarna är borttagna
 
----
 
-## 👥 Samarbete
-Projektet har genomförts i par.  
-Båda deltagarna har bidragit till design, implementation och testning.
-
----
-
-## ✅ Uppfyllda kurskrav
-- Full CRUD-funktionalitet med Entity Framework ✔️
-- Flera tabeller med relationer ✔️
-- Asynkron kommunikation med databasen ✔️
-- Tydligt och användarvänligt gränssnitt ✔️
-- Versionshantering med flera genomtänkta commits ✔️
-
----
-
-## 🎓 Kurs
-NEU25G – Databaser
