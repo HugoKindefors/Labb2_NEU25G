@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Labb2_NEU25G.Models
+namespace Labb2_NEU25G
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -31,13 +31,12 @@ namespace Labb2_NEU25G.Models
             using var db = new MusicContext();
 
             var artists = await db.Artists
-             //.Where(artist => artist.Albums.Count > 2)  // TOG BORT?
              .Include(artist => artist.Albums)
              .ThenInclude(album => album.Tracks)
              .OrderBy(a => a.Name)
              .ToListAsync();
 
-
+            
             myTreeView.ItemsSource = new ObservableCollection<Artist>(artists);
         }
 
